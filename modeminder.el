@@ -1,36 +1,45 @@
 ;;; mm.el --- Print graph of major and minor modes  -*- lexical-binding: t -*-
-;; Usage: M-x mm-show-modes
-;; J.D. Smith, 2022
+;; Copyright (C) 2022 JDS
+
+;; Author: J.D. Smith <jdtsmith@gmail.com>
+;; URL: https://github.com/jdtsmith/modeminder
+;; Package-Requires: ((emacs "27.1"))
+;; Version: 0.0.1
+;; Keywords: modes
+
+;; Usage: M-x mode-minder
+
+;;; Code:
 (require 'button)
 (eval-when-compile
   (require 'cl-lib)
   (require 'seq))
 
-(defvar mm-ht (make-hash-table :test 'eq))
-(defconst mm-pad 36)
+(defvar mode-minder-ht (make-hash-table :test 'eq))
+(defconst mode-minder-pad 36)
 
-(defun mm-describe-function (func)
+(defun mode-minder--describe-function (func)
   (let (help-xref-following) ; do not open locally
     (describe-function func)))
 
-(define-button-type 'mm-help-function
+(define-button-type 'mode-minder-help-function
   :supertype 'help-xref
-  'help-function 'mm-describe-function
+  'help-function 'mode-minder--describe-function
   'help-echo (purecopy "mouse-2, RET: describe this function"))
 
-(defun mm-sym-sort (a b)
+(defun mode-minder--sym-sort (a b)
   (string-lessp (downcase (symbol-name a)) (downcase (symbol-name b))))
 
-(defun mm-map-tree (mode children depth)
+(defun mode-minder--map-tree (mode children depth)
   (let* ((mstr (concat (make-string (* 2 depth) ?\s)
 		       (if (= (% depth 2) 0) "•" "-") " "
 		       (symbol-name mode)))
-	 (pad (max 0 (- mm-pad (length mstr)))))
+	 (pad (max 0 (- mode-minder-pad (length mstr)))))
     (princ mstr)
     (with-current-buffer standard-output
       (save-excursion
 	(re-search-backward " \\([^ ]+\\)")
-	(help-xref-button 1 'mm-help-function mode)))
+	(help-xref-button 1 'mode-minder-help-function mode)))
     (when (file-in-directory-p (symbol-file mode) package-user-dir)
       (princ "(P)")
       (setq pad (max 0 (- pad 3))))
@@ -39,16 +48,14 @@
 	      (doc (substring doc 0 (string-match (rx (or (group ?. space) ?\n)) doc))))
 	(princ (concat " " doc)))
     (princ "\n")
-    (mapc (lambda (c) (mm-map-tree c (gethash c mm-ht) (1+ depth)))
-	  (sort children #'mm-sym-sort))))
+    (mapc (lambda (c) (mode-minder--map-tree c (gethash c mode-minder-ht) (1+ depth)))
+	  (sort children #'mode-minder--sym-sort))))
 
-(defun mm-show-modes ()
-  "Show heirarchy of major and minor modes"
 (defvar mode-minder--warmed nil)
 (defun mode-minder ()
   "Show heirarchy of all major and minor modes."
   (interactive)
-  (clrhash mm-ht)
+  (clrhash mode-minder-ht)
 
   (unless mode-minder--warmed
     (message "Mode-Minder: Loading all mode libraries...")
@@ -82,3 +89,5 @@
 	       (mapc (lambda (x) (mode-minder--map-tree x (gethash x mode-minder-ht) 0))
 		     (sort list #'mode-minder--sym-sort))))))
 
+(provide 'mode-minder)
+;;; mode-minder.el ends here.
