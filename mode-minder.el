@@ -30,19 +30,26 @@
 (defun mode-minder--sym-sort (a b)
   (string-lessp (downcase (symbol-name a)) (downcase (symbol-name b))))
 
+(defconst mode-minder--builtin-dir
+  (file-name-directory (directory-file-name data-directory)))
+
 (defun mode-minder--map-tree (mode children depth)
   (let* ((mstr (concat (make-string (* 2 depth) ?\s)
 		       (if (= (% depth 2) 0) "•" "-") " "
 		       (symbol-name mode)))
-	 (pad (max 0 (- mode-minder-pad (length mstr)))))
+	 (sfile (symbol-file mode))
+	 (tag (cond
+	       ((file-in-directory-p sfile package-user-dir)
+		"(P)")
+	       ((not (file-in-directory-p sfile mode-minder--builtin-dir))
+		"(O)")))
+	 (pad (max 0 (- mode-minder-pad (length mstr) (length tag)))))
     (princ mstr)
     (with-current-buffer standard-output
       (save-excursion
 	(re-search-backward " \\([^ ]+\\)")
 	(help-xref-button 1 'mode-minder-help-function mode)))
-    (when (file-in-directory-p (symbol-file mode) package-user-dir)
-      (princ "(P)")
-      (setq pad (max 0 (- pad 3))))
+    (if tag (princ tag))
     (princ (make-string pad ?\s))
     (if-let* ((doc (documentation mode))
 	      (doc (substring doc 0 (string-match (rx (or (group ?. space) ?\n)) doc))))
