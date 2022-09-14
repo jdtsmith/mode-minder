@@ -44,26 +44,41 @@
 
 (defun mm-show-modes ()
   "Show heirarchy of major and minor modes"
+(defvar mode-minder--warmed nil)
+(defun mode-minder ()
+  "Show heirarchy of all major and minor modes."
   (interactive)
   (clrhash mm-ht)
+
+  (unless mode-minder--warmed
+    (message "Mode-Minder: Loading all mode libraries...")
+    (mapatoms
+     (lambda (x)
+       (when-let (((and (commandp x) (string-suffix-p "-mode" (symbol-name x))))
+		  (package (intern-soft (file-name-base (symbol-file x)))))
+	 (condition-case nil (require package) (error nil)))))
+    (setq mode-minder--warmed t)
+    (message "Mode-Minder: Loading all mode libraries...done"))
   (with-help-window "*Modes*"
     (let (roots minors)
       (mapatoms
        (lambda (x)
 	 (when (and (commandp x) (string-suffix-p "-mode" (symbol-name x)))
 	   (if (memq x minor-mode-list) (push x minors)
-	     (when-let ((package (intern-soft (file-name-base (symbol-file x)))))
-	       (condition-case nil (require package) (error nil)))
 	     (if-let ((parent (get x 'derived-mode-parent)))
-		 (push x (gethash parent mm-ht))
+		 (push x (gethash parent mode-minder-ht))
 	       (push x roots))))))
       (cl-loop for list in
-	       (append (mapcar #'cdr (seq-group-by (lambda (x) (null (gethash x mm-ht))) roots))
+	       (append (mapcar #'cdr (seq-group-by (lambda (x) (null (gethash x mode-minder-ht))) roots))
 		       (list minors))
 	       for i upfrom 0 do
-	       (princ (aref '["Major Mode Hierarchies:" "\nStandalone Major Modes:" "\nMinor Modes:"] i))
+	       (princ (aref '["Major Mode Hierarchies:"
+			      "\nStandalone Major Modes:"
+			      "\nMinor Modes:"]
+			    i))
 	       (with-current-buffer standard-output
 		 (add-text-properties (line-beginning-position) (point) '(font-lock-face info-title-2)))
 	       (princ "\n\n")
-	       (mapc (lambda (x) (mm-map-tree x (gethash x mm-ht) 0))
-		     (sort list #'mm-sym-sort))))))
+	       (mapc (lambda (x) (mode-minder--map-tree x (gethash x mode-minder-ht) 0))
+		     (sort list #'mode-minder--sym-sort))))))
+
