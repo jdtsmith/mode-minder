@@ -73,7 +73,7 @@
 	 (condition-case nil (require package) (error nil)))))
     (setq mode-minder--warmed t)
     (message "Mode-Minder: Loading all mode libraries...done"))
-  (with-help-window "*Modes*"
+  (with-help-window "*Mode-Minder*"
     (let (roots minors)
       (mapatoms
        (lambda (x)
