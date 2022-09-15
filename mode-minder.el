@@ -1,14 +1,12 @@
-;;; mm.el --- Print graph of major and minor modes  -*- lexical-binding: t -*-
+;;; mode-minder.el --- List all major and minor modes  -*- lexical-binding: t -*-
 ;; Copyright (C) 2022 JDS
-
 ;; Author: J.D. Smith <jdtsmith@gmail.com>
-;; URL: https://github.com/jdtsmith/modeminder
+;; URL: https://github.com/jdtsmith/mode-minder
 ;; Package-Requires: ((emacs "27.1"))
 ;; Version: 0.0.1
 ;; Keywords: modes
 
 ;; Usage: M-x mode-minder
-
 ;;; Code:
 (require 'button)
 (eval-when-compile
