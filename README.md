@@ -9,7 +9,9 @@ Show all major and minor modes available in Emacs.
 
 ## Information Displayed
 
-- Nested heirarchy, useful for targetting mode-hooks, etc.
+- Nested major mode heirarchy, useful for targeting mode-hooks, etc.
+- Standalone major modes
+- Minor modes
 - One-line mode description
 - A clickable help link for the mode
 - An origin tag:
