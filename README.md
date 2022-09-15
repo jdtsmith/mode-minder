@@ -18,4 +18,4 @@ Show all major and minor modes available in Emacs.
     - `(P)` for modes found in packages installed by the default package manager
     - `(O)` for other non-builtin packages
 
-Note: on first invocation, all known mode libraries are loaded with `require`.
+Note: on first invocation, all known major-mode libraries are loaded with `require`.
