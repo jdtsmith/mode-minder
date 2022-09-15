@@ -8,13 +8,15 @@
 
 ;; Usage: M-x mode-minder
 ;;; Code:
+(require 'help-fns)
 (require 'button)
 (eval-when-compile
   (require 'cl-lib)
   (require 'seq))
 
 (defvar mode-minder-ht (make-hash-table :test 'eq))
-(defconst mode-minder-pad 36)
+(defvar mode-minder-alias-ht (make-hash-table :test 'eq))
+(defconst mode-minder-pad 38)
 
 (defun mode-minder--describe-function (func)
   (let (help-xref-following) ; do not open locally
@@ -36,12 +38,17 @@
 		       (if (= (% depth 2) 0) "•" "-") " "
 		       (symbol-name mode)))
 	 (sfile (symbol-file mode))
-	 (tag (cond
-	       ((file-in-directory-p sfile package-user-dir)
-		"(P)")
-	       ((not (or (not (eq (aref sfile 0) ?/)) ;relative filename
-			 (file-in-directory-p sfile mode-minder--builtin-dir)))
-		"(O)")))
+	 (aliases (gethash mode mode-minder-alias-ht))
+	 (tag
+	  (concat 
+	   (cond
+	    ((file-in-directory-p sfile package-user-dir)
+	     "[P]")
+	    ((not (or (not (eq (aref sfile 0) ?/)) ;relative filename
+		      (file-in-directory-p sfile mode-minder--builtin-dir)))
+	     "[O]"))
+	   (if aliases
+	       (concat " (" (string-join (mapcar #'symbol-name aliases) ", ") ")"))))
 	 (pad (max 0 (- mode-minder-pad (length mstr) (length tag)))))
     (princ mstr)
     (with-current-buffer standard-output
@@ -63,8 +70,7 @@
 (defun mode-minder ()
   "Show heirarchy of all major and minor modes."
   (interactive)
-  (clrhash mode-minder-ht)
-
+  (clrhash mode-minder-ht) (clrhash mode-minder-alias-ht)
   (unless mode-minder--warmed
     (message "Mode-Minder: Loading all mode libraries...")
     (mapatoms
@@ -79,10 +85,12 @@
       (mapatoms
        (lambda (x)
 	 (when (and (commandp x) (string-suffix-p "-mode" (symbol-name x)))
-	   (if (memq x minor-mode-list) (push x minors)
-	     (if-let ((parent (get x 'derived-mode-parent)))
-		 (push x (gethash parent mode-minder-ht))
-	       (push x roots))))))
+	   (seq-let (_ _ aliased real-def) (help-fns--analyze-function x)
+	     (if aliased (push x (gethash real-def mode-minder-alias-ht))
+	       (if (memq x minor-mode-list) (push x minors)
+		 (if-let ((parent (get x 'derived-mode-parent)))
+		     (push x (gethash parent mode-minder-ht))
+		   (push x roots))))))))
       (cl-loop for list in (append (mapcar #'cdr (seq-group-by
 						  (lambda (x) (null (gethash x mode-minder-ht)))
 						  roots))

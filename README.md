@@ -15,7 +15,8 @@ Show all major and minor modes available in Emacs.
 - One-line mode description
 - A clickable help link for the mode
 - An origin tag:
-    - `(P)` for modes found in packages installed by the default package manager
-    - `(O)` for other non-builtin packages
+    - `[P]` for modes found in packages installed by the default package manager
+    - `[O]` for other non-builtin packages
+- _Aliases_ to the mode in parentheses, if any
 
 Note: on first invocation, all known major-mode libraries are loaded with `require`.
