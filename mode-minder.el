@@ -81,14 +81,13 @@
 	     (if-let ((parent (get x 'derived-mode-parent)))
 		 (push x (gethash parent mode-minder-ht))
 	       (push x roots))))))
-      (cl-loop for list in
-	       (append (mapcar #'cdr (seq-group-by (lambda (x) (null (gethash x mode-minder-ht))) roots))
-		       (list minors))
-	       for i upfrom 0 do
-	       (princ (aref '["Major Mode Hierarchies:"
-			      "\nStandalone Major Modes:"
-			      "\nMinor Modes:"]
-			    i))
+      (cl-loop for list in (append (mapcar #'cdr (seq-group-by
+						  (lambda (x) (null (gethash x mode-minder-ht)))
+						  roots))
+				   (list minors))
+	       for heading in '("Major Mode Hierarchies:" "\nStandalone Major Modes:" "\nMinor Modes:")
+	       do
+	       (princ heading)
 	       (with-current-buffer standard-output
 		 (add-text-properties (line-beginning-position) (point) '(font-lock-face info-title-2)))
 	       (princ "\n\n")
