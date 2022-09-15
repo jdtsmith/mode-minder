@@ -1,6 +1,9 @@
 # mode-minder
 Show all major and minor modes available in Emacs.
 
+![mm](https://user-images.githubusercontent.com/93749/190288087-bf5c3541-4676-485c-9447-933b24b75a63.png)
+
+
 ## Usage
 `M-x mode-minder`
 
