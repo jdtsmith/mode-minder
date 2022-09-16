@@ -40,15 +40,16 @@
 	 (sfile (symbol-file mode))
 	 (aliases (gethash mode mode-minder-alias-ht))
 	 (tag
-	  (concat 
-	   (cond
-	    ((file-in-directory-p sfile package-user-dir)
-	     "[P]")
-	    ((not (or (not (eq (aref sfile 0) ?/)) ;relative filename
-		      (file-in-directory-p sfile mode-minder--builtin-dir)))
-	     "[O]"))
-	   (if aliases
-	       (concat " (" (string-join (mapcar #'symbol-name aliases) ", ") ")"))))
+	  (if sfile
+	      (concat 
+	       (cond
+		((file-in-directory-p sfile package-user-dir)
+		 "[P]")
+		((not (or (not (eq (aref sfile 0) ?/)) ;relative filename
+			  (file-in-directory-p sfile mode-minder--builtin-dir)))
+		 "[O]"))
+	       (if aliases
+		   (concat " (" (string-join (mapcar #'symbol-name aliases) ", ") ")")))))
 	 (pad (max 0 (- mode-minder-pad (length mstr) (length tag)))))
     (princ mstr)
     (with-current-buffer standard-output
