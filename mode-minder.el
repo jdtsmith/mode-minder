@@ -67,6 +67,15 @@
     (mapc (lambda (c) (mode-minder--map-tree c (gethash c mode-minder-ht) (1+ depth)))
 	  (sort children #'mode-minder--sym-sort))))
 
+
+(defun mode-minder--count (syms)
+  (+ (length syms)
+     (apply #'+ (mapcar (lambda (x)
+			  (if-let ((children (gethash x mode-minder-ht)))
+			      (mode-minder--count children)
+			    0))
+			syms))))
+
 (defvar mode-minder--warmed nil)
 (defun mode-minder ()
   "Show heirarchy of all major and minor modes."
@@ -103,9 +112,9 @@
 						  (lambda (x) (null (gethash x mode-minder-ht)))
 						  roots))
 				   (list minors))
-	       for heading in '("Major Mode Hierarchies:" "\nStandalone Major Modes:" "\nMinor Modes:")
+	       for heading in '("Major Mode Hierarchies" "\nStandalone Modes" "\nMinor Modes")
 	       do
-	       (princ heading)
+	       (princ (format "%s (%d):" heading (mode-minder--count list)))
 	       (with-current-buffer standard-output
 		 (add-text-properties (line-beginning-position) (point) '(font-lock-face info-title-2)))
 	       (princ "\n\n")
