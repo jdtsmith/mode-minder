@@ -3,7 +3,7 @@
 ;; Author: J.D. Smith <jdtsmith@gmail.com>
 ;; URL: https://github.com/jdtsmith/mode-minder
 ;; Package-Requires: ((emacs "27.1"))
-;; Version: 0.0.1
+;; Version: 0.0.2
 ;; Keywords: modes
 
 ;; Usage: M-x mode-minder
