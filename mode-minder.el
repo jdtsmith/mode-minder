@@ -92,7 +92,10 @@
 	 (when (and (commandp x) (string-suffix-p "-mode" (symbol-name x)))
 	   (seq-let (_ _ aliased real-def) (help-fns--analyze-function x)
 	     (if aliased (push x (gethash real-def mode-minder-alias-ht))
-	       (if (memq x minor-mode-list) (push x minors)
+	       (if (or (memq x minor-mode-list)
+		       (alist-get x minor-mode-alist)
+		       (string-suffix-p "minor-mode" (symbol-name x))) ; trust the name
+		   (push x minors)
 		 (if-let ((parent (get x 'derived-mode-parent)))
 		     (push x (gethash parent mode-minder-ht))
 		   (push x roots))))))))
