@@ -41,7 +41,7 @@
 	 (aliases (gethash mode mode-minder-alias-ht))
 	 (tag
 	  (if sfile
-	      (concat 
+	      (concat
 	       (cond
 		((file-in-directory-p sfile package-user-dir)
 		 "[P]")
@@ -76,9 +76,13 @@
     (message "Mode-Minder: Loading all mode libraries...")
     (mapatoms
      (lambda (x)
-       (when-let (((and (commandp x) (string-suffix-p "-mode" (symbol-name x))))
-		  (package (intern-soft (file-name-base (symbol-file x)))))
-	 (condition-case nil (require package) (error nil)))))
+       (when (and (commandp x) (string-suffix-p "-mode" (symbol-name x)))
+	 (let* ((package (file-name-base (symbol-file x)))
+		(psym (intern-soft package)))
+	   (condition-case nil (require psym) ; psym may be nil
+	     (error
+	      (condition-case nil (load package)
+		(error nil))))))))
     (setq mode-minder--warmed t)
     (message "Mode-Minder: Loading all mode libraries...done"))
   (with-help-window "*Mode-Minder*"
