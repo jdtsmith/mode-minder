@@ -86,12 +86,13 @@
     (mapatoms
      (lambda (x)
        (when (and (commandp x) (string-suffix-p "-mode" (symbol-name x)))
-	 (let* ((package (file-name-base (symbol-file x)))
-		(psym (intern-soft package)))
-	   (condition-case nil (require psym) ; psym may be nil
-	     (error
-	      (condition-case nil (load package)
-		(error nil))))))))
+	 (when-let ((file (symbol-file x))
+		    (package (file-name-base (symbol-file x))))
+	   (condition-case nil
+	       (if-let ((psym (intern-soft package)))
+		   (require psym)
+		 (load package))
+	     (error nil))))))
     (setq mode-minder--warmed t)
     (message "Mode-Minder: Loading all mode libraries...done"))
   (with-help-window "*Mode-Minder*"
